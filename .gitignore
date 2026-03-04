@@ -1,0 +1,9 @@
+__pycache__/
+node_modules/
+.env
+*.log
+*.bz
+.venv
+data
+*.bz2
+*.word
