@@ -1,5 +1,8 @@
+import time
+
 import torch
 from torch import nn
+from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 from dataset import get_dataloader
@@ -66,12 +69,29 @@ def train():
     # 6. 优化器
     optimizer = torch.optim.Adam(model.parameters(), lr=config.LEARNING_RATE)
 
+    # 7. tensorboard writer
+    writer = SummaryWriter(log_dir=config.LOGS_DIR / time.strftime("%Y%m%d-%H%M%S"))
+
     # 开始训练
+    best_loss = float('inf')
     for epoch in range(1, 1 + config.EPOCHS):
         print('=' * 10, 'Epoch {}/{}'.format(epoch, config.EPOCHS), '=' * 10)
         # 训练一个epoch的逻辑
         loss = train_one_epoch(model, dataloader, loss_fn, optimizer, device)
         print(f'loss:{loss}')
+
+        # 记录训练结果
+        writer.add_scalar('loss', loss, epoch)
+
+        # 保存模型
+        if loss < best_loss:
+            best_loss = loss
+            torch.save(model.state_dict(), config.MODELS_DIR / 'best_model.pth')
+
+            print("save model")
+
+
+    writer.close()
 
 
 if __name__ == '__main__':
